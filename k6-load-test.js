@@ -57,7 +57,7 @@ const productIds = [
   7778134,
 ]
 
-const categoryTrees = ['40', '42', '3', '1', '37', '14', '34']
+const categoryTrees = ['40', '42', '39', '1', '14', '34']
 
 export default function () {
   const productId = productIds[Math.floor(Math.random() * productIds.length)]
@@ -76,8 +76,10 @@ export default function () {
 
   const productInfoCheck = check(productInfoRes, {
     'product info status is 200': (r) => r.status === 200,
-    'product info has data': (r) => r.json() && r.json().product !== undefined,
-    'product info response time < 2000ms': (r) => r.timings.duration < 2000,
+    'product info has data': (r) =>
+      r && r.json() && r.json().product !== undefined,
+    'product info response time < 2000ms': (r) =>
+      r && r.timings && r.timings.duration < 2000,
   })
 
   errorRate.add(!productInfoCheck)
@@ -101,9 +103,9 @@ export default function () {
 
   const categoryTreeInfoCheck = check(categoryTreeInfoRes, {
     'categoryTree info status is 200': (r) => r.status === 200,
-    'categoryTree info has data': (r) => r.json() && r.json().length,
+    'categoryTree info has data': (r) => r && r.json() && r.json().length,
     'categoryTree info response time < 2000ms': (r) =>
-      r.timings.duration < 2000,
+      r && r.timings && r.timings.duration < 2000,
   })
 
   errorRate.add(!categoryTreeInfoCheck)

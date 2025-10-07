@@ -57,7 +57,11 @@ export const options = {
     product_info_duration: ['p(95)<4000', 'p(99)<8000', 'avg<3000'],
 
     // Category tree information endpoint thresholds
-    products_by_category_info_duration: ['p(95)<5000', 'p(99)<10000', 'avg<3500'],
+    products_by_category_info_duration: [
+      'p(95)<5000',
+      'p(99)<10000',
+      'avg<3500',
+    ],
 
     // HTTP failures should be less than 5% during peak
     http_req_failed: ['rate<0.05'],
@@ -75,11 +79,20 @@ const BASE_URL = 'https://blacksipqa.myvtex.com'
 
 // Expanded test data for more realistic Black Friday scenarios
 const productIds = [
-  7778144, 7778143, 7778142, 7778141, 7778140, 7778139, 7778138, 7778137,
-  7778136, 7778135, 7778134,
+  7778144,
+  7778143,
+  7778142,
+  7778141,
+  7778140,
+  7778139,
+  7778138,
+  7778137,
+  7778136,
+  7778135,
+  7778134,
 ]
 
-const categoryTrees = ['40', '42', '3', '1', '37', '14', '34']
+const categoryTrees = ['40', '42', '39', '1', '14', '34']
 
 // User behavior scenarios with weights (percentages)
 const USER_BEHAVIORS = {
@@ -90,9 +103,11 @@ const USER_BEHAVIORS = {
 
 function getRandomBehavior() {
   const rand = Math.random()
+
   if (rand < USER_BEHAVIORS.BROWSER) return 'BROWSER'
-  if (rand < USER_BEHAVIORS.BROWSER + USER_BEHAVIORS.CATEGORY_SHOPPER)
+  if (rand < USER_BEHAVIORS.BROWSER + USER_BEHAVIORS.CATEGORY_SHOPPER) {
     return 'CATEGORY_SHOPPER'
+  }
 
   return 'DEAL_HUNTER'
 }
@@ -114,7 +129,8 @@ function browserBehavior() {
 
   const productInfoCheck = check(productInfoRes, {
     'product info status is 200': (r) => r.status === 200,
-    'product info has data': (r) => r && r.json() && r.json().product !== undefined,
+    'product info has data': (r) =>
+      r && r.json() && r.json().product !== undefined,
     'product info response time < 5000ms': (r) => r.timings.duration < 5000,
   })
 
@@ -164,7 +180,7 @@ function categoryShopperBehavior() {
     productInfoDuration.add(productInfoRes.timings.duration)
 
     const productCheck = check(productInfoRes, {
-      'product info status is 200': (r) => r?.status === 200,
+      'product info status is 200': (r) => r && r.status === 200,
     })
 
     if (productCheck) successfulRequests.add(1)
@@ -190,7 +206,7 @@ function dealHunterBehavior() {
     productInfoDuration.add(productInfoRes.timings.duration)
 
     const productCheck = check(productInfoRes, {
-      'product info status is 200': (r) => r?.status === 200,
+      'product info status is 200': (r) => r && r.status === 200,
     })
 
     if (productCheck) successfulRequests.add(1)
@@ -210,12 +226,17 @@ export default function () {
     case 'BROWSER':
       browserBehavior()
       break
+
     case 'CATEGORY_SHOPPER':
       categoryShopperBehavior()
       break
+
     case 'DEAL_HUNTER':
       dealHunterBehavior()
       break
+
+    default:
+      console.log(`Unknown behavior: ${behavior}`)
   }
 
   // Random additional sleep to simulate realistic user patterns
@@ -233,6 +254,6 @@ export function setup() {
 }
 
 // Teardown function - runs once at the end
-export function teardown(data) {
+export function teardown() {
   console.log('✅ Black Friday Load Test completed')
 }
